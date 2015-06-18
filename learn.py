@@ -9,7 +9,7 @@ from __future__ import print_function
 import numpy as np
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
-from trace import Trace
+import ekg_data
 
 WINDOW_LEN = 32
 
@@ -50,27 +50,27 @@ def sliding_chunker(data, window_len, slide_len):
     return chunks
 
 def main():
-    scale = 1.0/200
+    n_samples = 1000
     print("Reading data...")
-    ekg_data = Trace.read_ekg_data('a02.dat', scale)[0:1000]
+    data = ekg_data.read_ekg_data('a02.dat')[0:n_samples]
 
     window_rads = np.linspace(0, np.pi, WINDOW_LEN)
     window = np.sin(window_rads)**2
 
     print("Windowing data...")
-    segments = get_segments(ekg_data, window)
+    segments = get_segments(data, window)
 
     print("Clustering...")
     clusterer = KMeans(n_clusters=30)
     clusterer.fit(segments)
 
     print("Reconstructing...")
-    reconstructed_ekg_data = np.zeros(len(ekg_data))
-    for chunk_n, chunk in enumerate(sliding_chunker(ekg_data,
+    reconstructed_data = np.zeros(len(data))
+    for chunk_n, chunk in enumerate(sliding_chunker(data,
             window_len=WINDOW_LEN, slide_len=WINDOW_LEN/2)):
 
         pos = chunk_n*WINDOW_LEN/2
-        if (pos + WINDOW_LEN) > len(ekg_data):
+        if (pos + WINDOW_LEN) > len(data):
             break
 
         chunk *= window
@@ -83,11 +83,11 @@ def main():
         # the chunk we're looking for
         nearest_match *= chunk_size
 
-        reconstructed_ekg_data[pos:pos+WINDOW_LEN] += nearest_match
+        reconstructed_data[pos:pos+WINDOW_LEN] += nearest_match
 
     plt.figure()
-    plt.plot(ekg_data[0:500], label="Original EKG")
-    plt.plot(reconstructed_ekg_data[0:500], label="Reconstructed EKG")
+    plt.plot(data[0:500], label="Original EKG")
+    plt.plot(reconstructed_data[0:500], label="Reconstructed EKG")
     plt.legend()
     plt.show()
 
