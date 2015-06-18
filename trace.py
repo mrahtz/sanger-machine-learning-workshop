@@ -23,7 +23,8 @@ class Trace(object):
             data_raw = input_file.read()
         len_bytes = len(data_raw)
         len_shorts = len_bytes/2
-        unpack_string = '%dh' % len_shorts
+        # '<': little-endian
+        unpack_string = '<%dh' % len_shorts
         data_shorts = np.array(struct.unpack(unpack_string, data_raw))
         data_scaled = data_shorts * scale
         return data_scaled
