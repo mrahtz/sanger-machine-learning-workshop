@@ -13,20 +13,36 @@ import ekg_data
 
 WINDOW_LEN = 32
 
-def get_segments(ekg_data, window):
+def sliding_chunker(data, window_len, slide_len):
+    """
+    Split a list into a series of sub-lists, each sub-list window_len long,
+    sliding along by slide_len each time. If the list doesn't have enough
+    elements for the final sub-list to be window_len long, the remaining data
+    will be dropped.
+
+    e.g. sliding_chunker(range(6), window_len=3, slide_len=2)
+    gives [ [0, 1, 2], [2, 3, 4] ]
+    """
+    chunks = []
+    for pos in range(0, len(data), slide_len):
+        chunk = np.copy(data[pos:pos+window_len])
+        if len(chunk) != window_len:
+            continue
+        chunks.append(chunk)
+
+    return chunks
+
+def get_windowed_segments(data, window):
     """
     Populate a list of all segments seen in the input data.
-
-    (This is done by applying a sliding window across the data,
-    with a half-sine as the window function.)
+    Window using a half-sine function so that the resulting segments
+    can be added together even if slightly overlapping, enabling
+    later reconstruction.
     """
-
-    n_samples = 512
+    n_samples = len(data)
     step = 2
     segments = []
-    for sample_n in range(0, n_samples-WINDOW_LEN+1):
-        offset = sample_n * step
-        segment = np.copy(ekg_data[offset:offset+WINDOW_LEN])
+    for segment in sliding_chunker(data, len(window), step):
         segment *= window
         # normalize: make the vector formed by the data unit length
         vector_length = np.linalg.norm(segment)
@@ -34,20 +50,6 @@ def get_segments(ekg_data, window):
         segments.append(segment)
 
     return segments
-
-def sliding_chunker(data, window_len, slide_len):
-    """
-    Split a list into a series of sub-lists, each sub-list window_len long,
-    sliding along by slide_len each time.
-
-    e.g. sliding_chunker(range(10), window_len=3, slide_len=2)
-    gives [ [0, 1, 2], [2, 3, 4], ... ]
-    """
-    chunks = []
-    for pos in range(0, len(data), slide_len):
-        chunk = np.copy(data[pos:pos+window_len])
-        chunks.append(chunk)
-    return chunks
 
 def main():
     n_samples = 1000
@@ -58,7 +60,7 @@ def main():
     window = np.sin(window_rads)**2
 
     print("Windowing data...")
-    segments = get_segments(data, window)
+    segments = get_windowed_segments(data, window)
 
     print("Clustering...")
     clusterer = KMeans(n_clusters=30)
