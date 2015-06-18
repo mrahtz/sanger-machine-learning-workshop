@@ -51,6 +51,32 @@ def get_windowed_segments(data, window):
 
     return segments
 
+def reconstruct(data, window, clusterer):
+    """
+    Reconstruct the given data using the cluster centers from the given
+    clusterer.
+    """
+    chunks = \
+        sliding_chunker(data, window_len=WINDOW_LEN, slide_len=WINDOW_LEN/2)
+    reconstructed_data = np.zeros(len(data))
+    for chunk_n, chunk in enumerate(chunks):
+        # normalize and window the chunk so that we can find it in
+        # our clusters...
+        chunk *= window
+        chunk_size = np.linalg.norm(chunk)
+        chunk /= chunk_size
+        nearest_match_idx = clusterer.predict(chunk)[0]
+        nearest_match = np.copy(clusterer.cluster_centers_[nearest_match_idx])
+        # ...then re-scale the reference by the same size so it matches
+        # the chunk we're looking for
+        nearest_match *= chunk_size
+
+        pos = chunk_n * WINDOW_LEN/2
+        reconstructed_data[pos:pos+WINDOW_LEN] += nearest_match
+
+    return reconstructed_data
+
+
 def main():
     n_samples = 1000
     print("Reading data...")
@@ -67,29 +93,11 @@ def main():
     clusterer.fit(segments)
 
     print("Reconstructing...")
-    reconstructed_data = np.zeros(len(data))
-    for chunk_n, chunk in enumerate(sliding_chunker(data,
-            window_len=WINDOW_LEN, slide_len=WINDOW_LEN/2)):
-
-        pos = chunk_n*WINDOW_LEN/2
-        if (pos + WINDOW_LEN) > len(data):
-            break
-
-        chunk *= window
-        chunk_size = np.linalg.norm(chunk)
-        # normalize the chunk so that we can actually find a reference...
-        chunk /= chunk_size
-        nearest_match_idx = clusterer.predict(chunk)[0]
-        nearest_match = np.copy(clusterer.cluster_centers_[nearest_match_idx])
-        # ...then re-scale the reference by the same size so it matches
-        # the chunk we're looking for
-        nearest_match *= chunk_size
-
-        reconstructed_data[pos:pos+WINDOW_LEN] += nearest_match
+    reconstructed_data = reconstruct(data, window, clusterer)
 
     plt.figure()
-    plt.plot(data[0:500], label="Original EKG")
-    plt.plot(reconstructed_data[0:500], label="Reconstructed EKG")
+    plt.plot(data[0:n_samples], label="Original EKG")
+    plt.plot(reconstructed_data[0:n_samples], label="Reconstructed EKG")
     plt.legend()
     plt.show()
 
