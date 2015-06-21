@@ -11,7 +11,7 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import ekg_data
 
-WINDOW_LEN = 32
+WINDOW_LEN = 16
 
 def sliding_chunker(data, window_len, slide_len):
     """
