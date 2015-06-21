@@ -76,13 +76,18 @@ def reconstruct(data, window, clusterer):
 
     return reconstructed_data
 
-def read_influxdb_data(database, series, n_samples):
+def read_influxdb_data(database, series, extra_query):
     """
     Read time series data from Sanger InfluxDB server.
     """
-    client = InfluxDBClient('metrics01.internal.sanger.ac.uk', database=database)
+    #server = 'metrics01.internal.sanger.ac.uk'
+    server = '127.0.0.1'
+    client = InfluxDBClient(server, database=database)
+    query = 'select * from "%s"' % series
+    if extra_query:
+        query += (' ' + extra_query)
     data = \
-        client.query('select * from "%s" limit %d' % (series, n_samples))
+        client.query(query)
     return  data
 
 def main():
@@ -92,10 +97,11 @@ def main():
     print("Reading data...")
     database = 'graphite'
     series = 'ldap.host.ldap-proxy5.type.searches'
-    n_samples = 1000
-    data = read_influxdb_data(database, series, n_samples)
-    time = [point[0] for point in data[0]['points']]
-    values = [point[2] for point in data[0]['points']]
+    extra_query = "where time > '2015-05-20' and time < '2015-06-20'"
+    extra_query += " group by time(1h)"
+    data = read_influxdb_data(database, series, extra_query)
+    time = [float(point[0]) for point in data[0]['points']]
+    values = [float(point[2]) for point in data[0]['points']]
 
     training_data = values[0:500]
     test_data = values[500:1000]
