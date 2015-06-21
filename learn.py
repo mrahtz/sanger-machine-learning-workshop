@@ -84,22 +84,25 @@ def main():
     print("Reading data...")
     data = ekg_data.read_ekg_data('a02.dat')[0:n_samples]
 
+    training_data = data[0:500]
+    test_data = data[500:1000]
+
     window_rads = np.linspace(0, np.pi, WINDOW_LEN)
     window = np.sin(window_rads)**2
 
     print("Windowing data...")
-    segments = get_windowed_segments(data, window)
+    training_segments = get_windowed_segments(training_data, window)
 
     print("Clustering...")
     clusterer = KMeans(n_clusters=30)
-    clusterer.fit(segments)
+    clusterer.fit(training_segments)
 
     print("Reconstructing...")
-    reconstructed_data = reconstruct(data, window, clusterer)
+    reconstructed_test_data = reconstruct(test_data, window, clusterer)
 
     plt.figure()
-    plt.plot(data, label="Original EKG")
-    plt.plot(reconstructed_data, label="Reconstructed EKG")
+    plt.plot(test_data, label="Original EKG")
+    plt.plot(reconstructed_test_data, label="Reconstructed EKG")
     plt.legend()
     plt.show()
 
