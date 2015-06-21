@@ -34,50 +34,52 @@ def sliding_chunker(data, window_len, slide_len):
 
 def get_windowed_segments(data, window):
     """
-    Populate a list of all segments seen in the input data.
-    Window using a half-sine function so that the resulting segments
-    can be added together even if slightly overlapping, enabling
-    later reconstruction.
+    Populate a list of all segments seen in the input data.  Apply a window to
+    each segment so that they can be added together even if slightly
+    overlapping, enabling later reconstruction.
     """
-    n_samples = len(data)
     step = 2
-    segments = []
-    for segment in sliding_chunker(data, len(window), step):
+    windowed_segments = []
+    segments = sliding_chunker(data, window_len=len(window), slide_len=step)
+    for segment in segments:
         segment *= window
-        # normalize: make the vector formed by the data unit length
+        # normalize: make the vector formed by the data in n-dimensional space
+        # (where n is the number of elements in the vector) unit length
         vector_length = np.linalg.norm(segment)
         segment /= vector_length
-        segments.append(segment)
-
-    return segments
+        windowed_segments.append(segment)
+    return windowed_segments
 
 def reconstruct(data, window, clusterer):
     """
     Reconstruct the given data using the cluster centers from the given
     clusterer.
     """
-    chunks = \
-        sliding_chunker(data, window_len=WINDOW_LEN, slide_len=WINDOW_LEN/2)
+    slide_len = WINDOW_LEN/2
+    segments = \
+        sliding_chunker(data, window_len=WINDOW_LEN, slide_len=slide_len)
     reconstructed_data = np.zeros(len(data))
-    for chunk_n, chunk in enumerate(chunks):
-        # normalize and window the chunk so that we can find it in
+    for segment_n, segment in enumerate(segments):
+        # normalize and window the segment so that we can find it in
         # our clusters...
-        chunk *= window
-        chunk_size = np.linalg.norm(chunk)
-        chunk /= chunk_size
-        nearest_match_idx = clusterer.predict(chunk)[0]
+        segment *= window
+        vector_length = np.linalg.norm(segment)
+        segment /= vector_length
+        nearest_match_idx = clusterer.predict(segment)[0]
         nearest_match = np.copy(clusterer.cluster_centers_[nearest_match_idx])
         # ...then re-scale the reference by the same size so it matches
-        # the chunk we're looking for
-        nearest_match *= chunk_size
+        # the segment we're looking for
+        nearest_match *= vector_length
 
-        pos = chunk_n * WINDOW_LEN/2
+        pos = segment_n * slide_len
         reconstructed_data[pos:pos+WINDOW_LEN] += nearest_match
 
     return reconstructed_data
 
-
 def main():
+    """
+    Main function.
+    """
     n_samples = 1000
     print("Reading data...")
     data = ekg_data.read_ekg_data('a02.dat')[0:n_samples]
@@ -96,8 +98,8 @@ def main():
     reconstructed_data = reconstruct(data, window, clusterer)
 
     plt.figure()
-    plt.plot(data[0:n_samples], label="Original EKG")
-    plt.plot(reconstructed_data[0:n_samples], label="Reconstructed EKG")
+    plt.plot(data, label="Original EKG")
+    plt.plot(reconstructed_data, label="Reconstructed EKG")
     plt.legend()
     plt.show()
 
