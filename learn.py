@@ -99,10 +99,13 @@ def main():
 
     print("Reconstructing...")
     reconstructed_test_data = reconstruct(test_data, window, clusterer)
+    error = reconstructed_test_data - test_data
+    print("Maximum reconstruction error is %.1f" % max(error))
 
     plt.figure()
     plt.plot(test_data, label="Original EKG")
     plt.plot(reconstructed_test_data, label="Reconstructed EKG")
+    plt.plot(error, label="Reconstruction error")
     plt.legend()
     plt.show()
 
