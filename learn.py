@@ -10,27 +10,9 @@ import numpy as np
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import ekg_data
+import chunk_utils
 
 WINDOW_LEN = 16
-
-def sliding_chunker(data, window_len, slide_len):
-    """
-    Split a list into a series of sub-lists, each sub-list window_len long,
-    sliding along by slide_len each time. If the list doesn't have enough
-    elements for the final sub-list to be window_len long, the remaining data
-    will be dropped.
-
-    e.g. sliding_chunker(range(6), window_len=3, slide_len=2)
-    gives [ [0, 1, 2], [2, 3, 4] ]
-    """
-    chunks = []
-    for pos in range(0, len(data), slide_len):
-        chunk = np.copy(data[pos:pos+window_len])
-        if len(chunk) != window_len:
-            continue
-        chunks.append(chunk)
-
-    return chunks
 
 def get_windowed_segments(data, window):
     """
@@ -40,7 +22,7 @@ def get_windowed_segments(data, window):
     """
     step = 2
     windowed_segments = []
-    segments = sliding_chunker(data, window_len=len(window), slide_len=step)
+    segments = chunk_utils.sliding_chunker(data, window_len=len(window), slide_len=step)
     for segment in segments:
         segment *= window
         # normalize: make the vector formed by the data in n-dimensional space
@@ -57,7 +39,7 @@ def reconstruct(data, window, clusterer):
     """
     slide_len = WINDOW_LEN/2
     segments = \
-        sliding_chunker(data, window_len=WINDOW_LEN, slide_len=slide_len)
+        chunk_utils.sliding_chunker(data, window_len=WINDOW_LEN, slide_len=slide_len)
     reconstructed_data = np.zeros(len(data))
     for segment_n, segment in enumerate(segments):
         # normalize and window the segment so that we can find it in
