@@ -10,9 +10,9 @@ import numpy as np
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import ekg_data
-import chunk_utils
+import learn_utils
 
-WINDOW_LEN = 16
+WINDOW_LEN = 32
 
 def get_windowed_segments(data, window):
     """
@@ -22,72 +22,43 @@ def get_windowed_segments(data, window):
     """
     step = 2
     windowed_segments = []
-    segments = chunk_utils.sliding_chunker(data, window_len=len(window), slide_len=step)
+    segments = learn_utils.sliding_chunker(
+        data,
+        window_len=len(window),
+        slide_len=step
+    )
     for segment in segments:
         segment *= window
-        # normalize: make the vector formed by the data in n-dimensional space
-        # (where n is the number of elements in the vector) unit length
-        vector_length = np.linalg.norm(segment)
-        segment /= vector_length
         windowed_segments.append(segment)
     return windowed_segments
-
-def reconstruct(data, window, clusterer):
-    """
-    Reconstruct the given data using the cluster centers from the given
-    clusterer.
-    """
-    slide_len = WINDOW_LEN/2
-    segments = \
-        chunk_utils.sliding_chunker(data, window_len=WINDOW_LEN, slide_len=slide_len)
-    reconstructed_data = np.zeros(len(data))
-    for segment_n, segment in enumerate(segments):
-        # normalize and window the segment so that we can find it in
-        # our clusters...
-        segment *= window
-        vector_length = np.linalg.norm(segment)
-        segment /= vector_length
-        nearest_match_idx = clusterer.predict(segment)[0]
-        nearest_match = np.copy(clusterer.cluster_centers_[nearest_match_idx])
-        # ...then re-scale the reference by the same size so it matches
-        # the segment we're looking for
-        nearest_match *= vector_length
-
-        pos = segment_n * slide_len
-        reconstructed_data[pos:pos+WINDOW_LEN] += nearest_match
-
-    return reconstructed_data
 
 def main():
     """
     Main function.
     """
-    n_samples = 1000
+    n_samples = 8192
     print("Reading data...")
     data = ekg_data.read_ekg_data('a02.dat')[0:n_samples]
 
-    training_data = data[0:500]
-    test_data = data[500:1000]
-
     window_rads = np.linspace(0, np.pi, WINDOW_LEN)
     window = np.sin(window_rads)**2
-
     print("Windowing data...")
-    training_segments = get_windowed_segments(training_data, window)
+    windowed_segments = get_windowed_segments(data, window)
 
     print("Clustering...")
-    clusterer = KMeans(n_clusters=30)
-    clusterer.fit(training_segments)
+    clusterer = KMeans(n_clusters=150)
+    clusterer.fit(windowed_segments)
 
     print("Reconstructing...")
-    reconstructed_test_data = reconstruct(test_data, window, clusterer)
-    error = reconstructed_test_data - test_data
+    reconstruction = learn_utils.reconstruct(data, window, clusterer)
+    error = reconstruction - data
     print("Maximum reconstruction error is %.1f" % max(error))
 
     plt.figure()
-    plt.plot(test_data, label="Original EKG")
-    plt.plot(reconstructed_test_data, label="Reconstructed EKG")
-    plt.plot(error, label="Reconstruction error")
+    n_plot_samples = 300
+    plt.plot(data[0:n_plot_samples], label="Original EKG")
+    plt.plot(reconstruction[0:n_plot_samples], label="Reconstructed EKG")
+    plt.plot(error[0:n_plot_samples], label="Reconstruction error")
     plt.legend()
     plt.show()
 
