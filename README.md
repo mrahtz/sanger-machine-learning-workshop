@@ -17,7 +17,7 @@ by Ted Dunning and Ellen Friedman.
 
 ### Requirements
 
-Python is required along with the following modules:
+Python is required, along with the following modules:
 * NumPy
 * matplotlib
 * scikit-learn
