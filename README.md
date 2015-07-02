@@ -17,10 +17,12 @@ by Ted Dunning and Ellen Friedman.
 
 ### Requirements
 
-Python and IPython Notebook dependencies are required, along with the following modules:
+Python is required, along with the following modules:
 * NumPy
 * matplotlib
 * scikit-learn
+
+IPython Notebook dependencies are also required, if running the notebook.
 
 If you're on Ubuntu:
 ```
