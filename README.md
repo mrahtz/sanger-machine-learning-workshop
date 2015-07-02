@@ -17,16 +17,16 @@ by Ted Dunning and Ellen Friedman.
 
 ### Requirements
 
-Python is required, along with the following modules:
+Python and IPython Notebook dependencies are required, along with the following modules:
 * NumPy
 * matplotlib
 * scikit-learn
 
 If you're on Ubuntu:
 ```
-$ sudo apt-get install python-numpy python-matplotlib python-sklearn
+$ sudo apt-get install ipython-notebook python-numpy python-matplotlib python-sklearn
 ```
 Or on any system with pip:
 ```
-$ pip install numpy matplotlib scikit-learn
+$ pip install ipython[notebook] numpy matplotlib scikit-learn
 ```
