@@ -7,7 +7,7 @@ The idea is based on Chapter 4, *More Complex, Adaptive Models* from
 [Practical Machine Learning](https://www.safaribooksonline.com/library/view/practical-machine-learning/9781491914151/ch04.html)
 by Ted Dunning and Ellen Friedman.
 
-* `Unsupervised Learning.ipynb` is an IPython notebook demonstrating a simple example of unsupervised learning: time-series anomaly detection.
+* `Unsupervised Learning.ipynb` is an IPython notebook demonstrating a simple example of unsupervised learning: time-series anomaly detection. View a static version of the notebook at http://nbviewer.ipython.org/github/mrahtz/sanger-machine-learning-workshop/blob/master/Unsupervised%20Learning.ipynb.
 * `a02.dat` is a set of EKG data from PhysioNet used to demonstrate the
   algorithms.
 * `ekg_data.py` is a module for reading the EKG data.
