@@ -1,7 +1,7 @@
 ## Sanger Anomaly Detection Workshop Code
 
 This repository contains code used for the unsupervised learning section of the
-machine learning workshop given to the Systems group at Sanger that I helped to run.
+machine learning workshop given to the Systems group at Sanger.
 
 The idea is based on Chapter 4, *More Complex, Adaptive Models* from
 [Practical Machine Learning](https://www.safaribooksonline.com/library/view/practical-machine-learning/9781491914151/ch04.html)
