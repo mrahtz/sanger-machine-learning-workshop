@@ -7,6 +7,16 @@ The idea is based on Chapter 4, *More Complex, Adaptive Models* from
 [Practical Machine Learning](https://www.safaribooksonline.com/library/view/practical-machine-learning/9781491914151/ch04.html)
 by Ted Dunning and Ellen Friedman.
 
+**Update**: Majid al-Dosari (in the comments at
+<http://amid.fish/anomaly-detection-with-k-means-clustering>) and Eamonn Keogh
+point out that there may be issues with the approach described here for the
+reasons outlined in
+[Clustering of Time Series Subsequences is Meaningless](http://www.cs.ucr.edu/~eamonn/meaningless.pdf).
+This material still serves as an introduction to unsupervised learning and
+clustering, but **beware in using it for anomaly detection in practice**.
+
+### Contents
+
 * `Unsupervised Learning.ipynb` is an IPython notebook demonstrating a simple example of unsupervised learning: time-series anomaly detection. View a static version of the notebook at http://nbviewer.ipython.org/github/mrahtz/sanger-machine-learning-workshop/blob/master/Unsupervised%20Learning.ipynb.
 * `a02.dat` is a set of EKG data from PhysioNet used to demonstrate the
   algorithms.
